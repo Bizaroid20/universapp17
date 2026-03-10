@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>UNIVERSE — Media Tracker</title>
+<meta name="theme-color" content="#e8281e" id="theme-color-meta">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="UNIVERSE">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+  --radius: 16px;
+  --radius-sm: 8px;
+  --shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+body[data-universe="films"] {
+  --bg1:#0a0000;--bg2:#1a0505;--accent:#e8281e;--accent2:#ff6b5e;
+  --card-bg:rgba(30,8,8,0.9);--card-border:rgba(232,40,30,0.2);
+  --text:#f5e6e6;--text-dim:#a88080;--nav-bg:rgba(10,0,0,0.95);--glow:rgba(232,40,30,0.3);
+}
+body[data-universe="series"] {
+  --bg1:#00050f;--bg2:#080520;--accent:#6c5ce7;--accent2:#a29bfe;
+  --card-bg:rgba(12,8,35,0.9);--card-border:rgba(108,92,231,0.2);
+  --text:#e8e4ff;--text-dim:#8b83c4;--nav-bg:rgba(0,5,15,0.95);--glow:rgba(108,92,231,0.3);
+}
+body[data-universe="livres"] {
+  --bg1:#010a04;--bg2:#061408;--accent:#27ae60;--accent2:#6fcf97;
+  --card-bg:rgba(4,18,8,0.9);--card-border:rgba(39,174,96,0.2);
+  --text:#e6f4ec;--text-dim:#7aab8f;--nav-bg:rgba(1,10,4,0.95);--glow:rgba(39,174,96,0.3);
+}
+body[data-universe="jeux"] {
+  --bg1:#050200;--bg2:#120800;--accent:#f39c12;--accent2:#fdcb6e;
+  --card-bg:rgba(20,10,0,0.9);--card-border:rgba(243,156,18,0.2);
+  --text:#fff8ec;--text-dim:#b09060;--nav-bg:rgba(5,2,0,0.95);--glow:rgba(243,156,18,0.3);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg1);color:var(--text);min-height:100vh;transition:background 0.5s ease,color 0.3s ease;}
+body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse 70% 50% at 15% 15%,var(--glow) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 85% 85%,var(--glow) 0%,transparent 50%),linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 100%);transition:all 0.5s ease;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--bg1);}
+::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px;}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--nav-bg);backdrop-filter:blur(20px);border-bottom:1px solid var(--card-border);height:60px;display:flex;align-items:center;gap:8px;padding:0 16px;transition:background var(--transition);}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:var(--accent);text-shadow:0 0 20px var(--glow);flex-shrink:0;margin-right:4px;}
+.nav-universes{display:flex;gap:4px;flex:1;overflow-x:auto;scrollbar-width:none;}
+.nav-universes::-webkit-scrollbar{display:none;}
+.nav-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border:1px solid transparent;border-radius:100px;background:transparent;color:var(--text-dim);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all var(--transition);}
+.nav-btn:hover{color:var(--text);background:rgba(255,255,255,0.06);}
+.nav-btn.active{background:var(--accent);color:#fff;box-shadow:0 0 16px var(--glow);}
+.nav-add{width:36px;height:36px;border-radius:50%;border:1px solid var(--card-border);background:var(--card-bg);color:var(--text);font-size:20px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all var(--transition);}
+.nav-add:hover{background:var(--accent);}
+
+main{max-width:1400px;margin:0 auto;padding:76px 14px 40px;}
+.universe-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;}
+.universe-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(38px,7vw,76px);line-height:0.9;letter-spacing:2px;}
+.universe-title span{display:block;font-size:0.32em;font-family:'DM Sans',sans-serif;font-weight:300;letter-spacing:6px;color:var(--accent);text-transform:uppercase;margin-bottom:4px;}
+.universe-stats{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.stat-pill{background:var(--card-bg);border:1px solid var(--card-border);border-radius:100px;padding:5px 14px;font-size:12px;color:var(--text-dim);backdrop-filter:blur(10px);}
+.stat-pill strong{color:var(--accent);font-size:15px;margin-right:3px;}
+
+.filters-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;}
+.filter-btn{padding:5px 12px;border-radius:100px;border:1px solid var(--card-border);background:var(--card-bg);color:var(--text-dim);font-size:12px;cursor:pointer;transition:all var(--transition);backdrop-filter:blur(10px);}
+.filter-btn:hover{color:var(--text);border-color:var(--accent);}
+.filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.filter-btn.heart.active{background:#e84393;border-color:#e84393;}
+select.filter-select{padding:5px 12px;border-radius:100px;border:1px solid var(--card-border);background:var(--card-bg);color:var(--text-dim);font-size:12px;cursor:pointer;outline:none;transition:all var(--transition);}
+select.filter-select option{background:var(--bg1);}
+
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:14px;}
+
+.media-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:all var(--transition);position:relative;backdrop-filter:blur(10px);animation:cardIn 0.35s ease both;}
+@keyframes cardIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.media-card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 14px 40px var(--glow);}
+.card-cover{width:100%;aspect-ratio:2/3;background:var(--bg2);position:relative;overflow:hidden;}
+.card-cover img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.5s ease;}
+.media-card:hover .card-cover img{transform:scale(1.05);}
+.card-cover-placeholder{width:100%;aspect-ratio:2/3;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--bg2),var(--bg1));font-size:40px;}
+.card-rank{position:absolute;top:7px;left:7px;background:var(--accent);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:13px;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px var(--glow);z-index:2;}
+.card-heart{position:absolute;top:7px;right:7px;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;transition:all var(--transition);z-index:2;}
+.card-heart:hover,.card-heart.active{background:rgba(232,67,147,0.85);}
+.card-seen-badge{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.85));padding:18px 7px 5px;font-size:10px;color:rgba(255,255,255,0.9);font-weight:600;letter-spacing:0.5px;z-index:2;}
+.card-body{padding:11px;}
+.card-title{font-weight:700;font-size:13px;line-height:1.3;margin-bottom:2px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card-meta{font-size:11px;color:var(--text-dim);margin-bottom:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card-score-row{display:flex;align-items:center;gap:6px;}
+.card-score{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent);line-height:1;}
+.card-score small{font-size:10px;color:var(--text-dim);font-family:'DM Sans',sans-serif;}
+.score-bar-mini{flex:1;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;}
+.score-bar-mini-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.8s ease;}
+.card-platform{display:inline-block;margin-top:5px;padding:2px 7px;background:rgba(255,255,255,0.08);border-radius:100px;font-size:10px;color:var(--text-dim);}
+.card-progress{margin-top:5px;}
+.card-progress-text{font-size:10px;color:var(--text-dim);margin-bottom:3px;}
+.card-progress-bar{height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;}
+.card-progress-fill{height:100%;background:var(--accent);border-radius:2px;}
+
+.add-card{background:var(--card-bg);border:2px dashed var(--card-border);border-radius:var(--radius);min-height:170px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all var(--transition);color:var(--text-dim);font-size:13px;gap:9px;}
+.add-card:hover{border-color:var(--accent);color:var(--accent);transform:scale(1.02);}
+.add-card-icon{width:42px;height:42px;border-radius:50%;border:2px dashed currentColor;display:flex;align-items:center;justify-content:center;font-size:20px;}
+
+.empty-state{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-dim);}
+.empty-state .empty-icon{font-size:52px;margin-bottom:12px;}
+.empty-state h3{font-size:17px;color:var(--text);margin-bottom:6px;}
+
+.modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:14px;opacity:0;pointer-events:none;transition:opacity var(--transition);}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--bg2);border:1px solid var(--card-border);border-radius:20px;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;transform:translateY(14px) scale(0.98);transition:transform var(--transition);box-shadow:var(--shadow),0 0 50px var(--glow);}
+.modal-overlay.open .modal{transform:translateY(0) scale(1);}
+.modal-header{padding:20px 20px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--card-border);position:sticky;top:0;background:var(--bg2);z-index:5;border-radius:20px 20px 0 0;}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--accent);}
+.modal-close{background:rgba(255,255,255,0.08);border:none;border-radius:50%;width:32px;height:32px;color:var(--text);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--transition);}
+.modal-close:hover{background:var(--accent);}
+.modal-body{padding:18px 20px;}
+.modal-footer{padding:14px 20px 20px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;border-top:1px solid var(--card-border);}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group.full{grid-column:1/-1;}
+label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);}
+input,select,textarea{background:rgba(255,255,255,0.07);border:1px solid var(--card-border);border-radius:var(--radius-sm);padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color var(--transition);width:100%;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+textarea{resize:vertical;min-height:70px;}
+select option{background:var(--bg1);color:var(--text);}
+
+.seen-section{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.04);border:1px solid var(--card-border);border-radius:var(--radius-sm);padding:12px;margin-bottom:14px;}
+.seen-toggle{position:relative;width:42px;height:23px;flex-shrink:0;}
+.seen-toggle input{opacity:0;width:0;height:0;position:absolute;}
+.seen-slider{position:absolute;inset:0;border-radius:12px;background:rgba(255,255,255,0.15);cursor:pointer;transition:all var(--transition);}
+.seen-slider::before{content:'';position:absolute;width:17px;height:17px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform var(--transition);}
+.seen-toggle input:checked + .seen-slider{background:var(--accent);}
+.seen-toggle input:checked + .seen-slider::before{transform:translateX(19px);}
+.seen-label{font-size:13px;color:var(--text);flex:1;}
+.seen-label small{display:block;font-size:11px;color:var(--text-dim);margin-top:2px;}
+.seen-date-input{width:140px;flex-shrink:0;font-size:13px;padding:7px 10px;}
+
+.rating-section{background:rgba(255,255,255,0.03);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px;margin-bottom:16px;}
+.rating-section h4{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--accent);margin-bottom:12px;}
+.criterion-row{display:flex;align-items:center;gap:9px;margin-bottom:11px;}
+.criterion-label{font-size:12px;color:var(--text);flex:0 0 auto;width:180px;}
+.criterion-label small{color:var(--text-dim);font-size:10px;margin-left:2px;}
+.criterion-input{display:flex;align-items:center;gap:7px;flex:1;}
+.criterion-input input[type="range"]{flex:1;-webkit-appearance:none;height:5px;background:rgba(255,255,255,0.12);border-radius:3px;border:none;padding:0;cursor:pointer;accent-color:var(--accent);}
+.criterion-value{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--accent);min-width:40px;text-align:right;}
+.total-score-display{display:flex;align-items:center;justify-content:center;gap:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:12px;padding:13px 18px;margin-top:12px;}
+.total-score-display .score-num{font-family:'Bebas Neue',sans-serif;font-size:42px;color:#fff;line-height:1;}
+.total-score-display .score-info{color:rgba(255,255,255,0.8);font-size:12px;}
+.total-score-display .score-info strong{display:block;color:#fff;font-size:14px;}
+
+.season-row{display:flex;align-items:center;gap:7px;margin-bottom:8px;}
+.season-label{font-size:12px;color:var(--text);flex:0 0 70px;}
+.season-input{display:flex;align-items:center;gap:5px;}
+.season-input input{width:52px;text-align:center;padding:6px 8px;}
+.season-ep-label{font-size:11px;color:var(--text-dim);}
+
+.detail-cover-row{display:flex;gap:18px;margin-bottom:18px;flex-wrap:wrap;}
+.detail-cover{width:115px;flex-shrink:0;border-radius:12px;overflow:hidden;box-shadow:var(--shadow),0 0 24px var(--glow);}
+.detail-cover img{width:100%;height:100%;object-fit:cover;display:block;}
+.detail-cover-placeholder{width:115px;height:168px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--bg2),var(--bg1));font-size:40px;border-radius:12px;}
+.detail-info{flex:1;min-width:160px;}
+.detail-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--text);line-height:1;margin-bottom:8px;}
+.detail-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.detail-tag{padding:3px 9px;background:rgba(255,255,255,0.08);border-radius:100px;font-size:11px;color:var(--text-dim);}
+.detail-tag.seen-tag{background:rgba(39,174,96,0.2);color:#6fcf97;}
+.detail-tag.unseen-tag{background:rgba(255,255,255,0.05);color:var(--text-dim);}
+.detail-score-big{font-family:'Bebas Neue',sans-serif;font-size:52px;color:var(--accent);line-height:1;}
+.detail-score-big small{font-size:19px;color:var(--text-dim);font-family:'DM Sans',sans-serif;}
+.detail-heart-btn{padding:7px 16px;border-radius:100px;border:1px solid rgba(232,67,147,0.4);background:rgba(232,67,147,0.1);color:#e84393;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all var(--transition);margin-top:7px;}
+.detail-heart-btn.active{background:#e84393;color:#fff;}
+
+.criteria-bars{margin-top:12px;}
+.crit-bar-row{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
+.crit-bar-label{font-size:12px;color:var(--text);flex:0 0 175px;}
+.crit-bar-track{flex:1;height:7px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden;}
+.crit-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 1s ease;}
+.crit-bar-val{font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--accent);min-width:42px;text-align:right;}
+
+.seasons-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:7px;margin-top:9px;}
+.season-card{background:rgba(255,255,255,0.05);border:1px solid var(--card-border);border-radius:9px;padding:9px;text-align:center;}
+.season-card .s-num{font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--accent);}
+.season-card .s-prog{font-size:10px;color:var(--text-dim);margin-top:3px;}
+.season-prog-bar{height:3px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:5px;overflow:hidden;}
+.season-prog-fill{height:100%;background:var(--accent);border-radius:2px;}
+
+.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:100px;padding:10px 24px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all var(--transition);box-shadow:0 4px 14px var(--glow);}
+.btn-primary:hover{transform:translateY(-1px);}
+.btn-danger{background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3);border-radius:100px;padding:8px 16px;font-size:13px;cursor:pointer;transition:all var(--transition);}
+.btn-danger:hover{background:rgba(231,76,60,0.3);}
+.btn-secondary{background:rgba(255,255,255,0.08);color:var(--text);border:1px solid var(--card-border);border-radius:100px;padding:8px 16px;font-size:13px;cursor:pointer;transition:all var(--transition);}
+.btn-secondary:hover{background:rgba(255,255,255,0.12);}
+
+.toast{position:fixed;bottom:22px;right:14px;background:var(--accent);color:#fff;padding:9px 18px;border-radius:100px;font-size:13px;font-weight:500;z-index:999;transform:translateY(80px);opacity:0;transition:all 0.4s ease;pointer-events:none;box-shadow:0 6px 22px var(--glow);}
+.toast.show{transform:translateY(0);opacity:1;}
+
+.section-label{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;color:var(--text-dim);margin-bottom:13px;padding-bottom:6px;border-bottom:1px solid var(--card-border);}
+.section-label span{color:var(--accent);}
+
+.radar-container{display:flex;justify-content:center;margin:12px 0;}
+canvas.radar{max-width:250px;}
+
+.install-banner{position:fixed;bottom:0;left:0;right:0;z-index:500;padding:12px 14px;background:var(--bg2);border-top:1px solid var(--card-border);backdrop-filter:blur(20px);display:flex;align-items:center;gap:11px;transform:translateY(100%);transition:transform 0.4s ease;box-shadow:0 -6px 28px rgba(0,0,0,0.4);}
+.install-banner.visible{transform:translateY(0);}
+.install-banner-icon{width:44px;height:44px;border-radius:11px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.install-banner-text{flex:1;}
+.install-banner-text strong{display:block;font-size:13px;font-weight:700;color:var(--text);}
+.install-banner-text span{font-size:11px;color:var(--text-dim);}
+.install-actions{display:flex;gap:6px;flex-shrink:0;}
+.btn-install{background:var(--accent);color:#fff;border:none;border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.btn-dismiss{background:rgba(255,255,255,0.08);color:var(--text-dim);border:1px solid var(--card-border);border-radius:100px;padding:7px 11px;font-size:12px;cursor:pointer;}
+
+@media(max-width:540px){
+  .cards-grid{grid-template-columns:repeat(2,1fr);gap:11px;}
+  .form-grid{grid-template-columns:1fr;}
+  .form-group.full{grid-column:1;}
+  .criterion-label{width:145px;font-size:11px;}
+  .crit-bar-label{flex:0 0 130px;}
+  .detail-title{font-size:22px;}
+  nav{padding:0 10px;}
+  main{padding:72px 10px 36px;}
+  .seen-date-input{width:120px;}
+}
+@keyframes heartbeat{0%,100%{transform:scale(1);}50%{transform:scale(1.25);}}
+.card-heart.active{animation:heartbeat 0.25s ease;}
+</style>
+</head>
+<body data-universe="films">
+
+<nav>
+  <div class="nav-logo">UNIVERSE</div>
+  <div class="nav-universes">
+    <button class="nav-btn active" onclick="switchUniverse('films')">🎬 Films</button>
+    <button class="nav-btn" onclick="switchUniverse('series')">📺 Séries</button>
+    <button class="nav-btn" onclick="switchUniverse('livres')">📚 Livres</button>
+    <button class="nav-btn" onclick="switchUniverse('jeux')">🎮 Jeux</button>
+  </div>
+  <button class="nav-add" onclick="openAddModal()" title="Ajouter">＋</button>
+</nav>
+
+<main>
+  <div class="universe-header">
+    <div class="universe-title">
+      <span id="universe-subtitle"></span>
+      <div id="universe-title-text"></div>
+    </div>
+    <div class="universe-stats" id="universe-stats"></div>
+  </div>
+  <div class="filters-bar" id="filters-bar"></div>
+  <div class="section-label">CLASSEMENT <span>&amp; COLLECTION</span></div>
+  <div class="cards-grid" id="cards-grid"></div>
+</main>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay" id="add-modal" onclick="handleOverlay(event,'add-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-form-title">AJOUTER</div>
+      <button class="modal-close" onclick="closeModal('add-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" id="form-fields"></div>
+      <div class="seen-section">
+        <label class="seen-toggle">
+          <input type="checkbox" id="f-seen" onchange="toggleSeenDate()">
+          <span class="seen-slider"></span>
+        </label>
+        <div class="seen-label">
+          <span id="seen-label-text">Terminé</span>
+          <small id="seen-label-sub">Cochez si vous avez terminé</small>
+        </div>
+        <input type="date" id="f-seen-date" class="seen-date-input" style="display:none">
+      </div>
+      <div class="rating-section">
+        <h4>NOTATION DÉTAILLÉE</h4>
+        <div id="criteria-inputs"></div>
+        <div class="total-score-display">
+          <div class="score-num" id="live-score">0.0</div>
+          <div class="score-info"><strong>Note totale</strong>sur 20 points</div>
+        </div>
+      </div>
+      <div id="extra-section"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-danger" id="delete-btn" style="display:none" onclick="deleteCurrentItem()">Supprimer</button>
+      <button class="btn-secondary" onclick="closeModal('add-modal')">Annuler</button>
+      <button class="btn-primary" onclick="saveItem()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detail-modal" onclick="handleOverlay(event,'detail-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="detail-modal-title">DÉTAILS</div>
+      <button class="modal-close" onclick="closeModal('detail-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="detail-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="editCurrentItem()">✏️ Modifier</button>
+      <button class="btn-primary" onclick="closeModal('detail-modal')">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- INSTALL BANNER -->
+<div class="install-banner" id="install-banner">
+  <div class="install-banner-icon" id="install-icon">🎬</div>
+  <div class="install-banner-text">
+    <strong>Installer UNIVERSE</strong>
+    <span>Accès rapide depuis l'écran d'accueil</span>
+  </div>
+  <div class="install-actions">
+    <button class="btn-dismiss" onclick="dismissInstall()">Plus tard</button>
+    <button class="btn-install" onclick="triggerInstall()">Installer</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var STORE_KEY = 'universe_v3';
+var UNIVERSE_CONFIG = {
+  films: {
+    emoji:'🎬', label:'Films', subtitle:'Cinéma', metaLabel:'Réalisateur',
+    seenLabel:'Vu le', notSeenLabel:'Non vu',
+    criteria:[
+      {key:'histoire',label:'Histoire / Émotion',max:8},
+      {key:'acting',label:'Acting / Acteurs',max:4},
+      {key:'musique',label:'Musique',max:3},
+      {key:'visuel',label:'Visuel / Image',max:3},
+      {key:'rythme',label:'Rythme / Pacing',max:2}
+    ]
+  },
+  series: {
+    emoji:'📺', label:'Séries', subtitle:'Télévision', metaLabel:'Showrunner',
+    seenLabel:'Terminée le', notSeenLabel:'En cours / Non vue',
+    criteria:[
+      {key:'histoire',label:'Histoire / Émotion',max:8},
+      {key:'acting',label:'Acting / Acteurs',max:4},
+      {key:'musique',label:'Musique',max:3},
+      {key:'visuel',label:'Visuel / Image',max:3},
+      {key:'rythme',label:'Rythme / Pacing',max:2}
+    ]
+  },
+  livres: {
+    emoji:'📚', label:'Livres', subtitle:'Bibliothèque', metaLabel:'Auteur',
+    seenLabel:'Lu le', notSeenLabel:'Non lu',
+    criteria:[
+      {key:'histoire',label:'Histoire / Émotion',max:8},
+      {key:'personnages',label:'Personnages',max:5},
+      {key:'ecriture',label:'Écriture / Style',max:4},
+      {key:'univers',label:'Univers / Immersion',max:3}
+    ]
+  },
+  jeux: {
+    emoji:'🎮', label:'Jeux vidéo', subtitle:'Gaming', metaLabel:'Studio',
+    seenLabel:'Terminé le', notSeenLabel:'Non terminé',
+    criteria:[
+      {key:'histoire',label:'Histoire',max:6},
+      {key:'visuel',label:'Visuel / Graphismes',max:5},
+      {key:'musique',label:'Musique / Son',max:4},
+      {key:'gameplay',label:'Gameplay',max:5}
+    ]
+  }
+};
+var PLATFORMS = ['PS5','PS4','Xbox Series','Xbox One','Nintendo Switch','PC','Mobile','Autre'];
+var GENRES = {
+  films:['Action','Comédie','Drame','Fantaisie','Horreur','Romance','SF','Thriller','Animation','Documentaire','Autre'],
+  series:['Action','Comédie','Drame','Fantaisie','Horreur','Romance','SF','Thriller','Animation','Documentaire','Autre'],
+  livres:['Roman','Fantasy','SF','Policier','Romance','Thriller','Biographie','BD/Manga','Essai','Autre'],
+  jeux:['Action','RPG','FPS','Aventure','Simulation','Sport','Stratégie','Puzzle','Plateforme','Autre']
+};
+
+function loadDB() {
+  try { var r = localStorage.getItem(STORE_KEY); if(r) return JSON.parse(r); } catch(e) {}
+  return {films:[],series:[],livres:[],jeux:[]};
+}
+function saveDB() { localStorage.setItem(STORE_KEY, JSON.stringify(db)); }
+
+var db = loadDB();
+var currentUniverse = 'films';
+var currentFilter = 'best';
+var currentPlatform = 'all';
+var editingId = null;
+var detailId = null;
+
+function calcTotal(item, u) {
+  return UNIVERSE_CONFIG[u].criteria.reduce(function(s,c){ return s + (parseFloat(item.scores && item.scores[c.key] || 0)); }, 0);
+}
+function seriesProgress(item) {
+  if (!item.seasons || !item.seasons.length) return {watched:0,total:0,pct:0};
+  var w = item.seasons.reduce(function(s,x){ return s+(parseInt(x.watched)||0); },0);
+  var t = item.seasons.reduce(function(s,x){ return s+(parseInt(x.total)||0); },0);
+  return {watched:w, total:t, pct:t>0?Math.round(w/t*100):0};
+}
+function esc(str) {
+  if(!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function genId() { return Date.now().toString(36)+Math.random().toString(36).substr(2,6); }
+
+var toastTimer;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+
+function formatDate(dateStr) {
+  if(!dateStr) return '';
+  try {
+    var d = new Date(dateStr + 'T12:00:00');
+    return d.toLocaleDateString('fr-FR', {day:'2-digit',month:'short',year:'numeric'});
+  } catch(e) { return dateStr; }
+}
+
+function switchUniverse(u) {
+  currentUniverse = u;
+  currentFilter = 'best';
+  currentPlatform = 'all';
+  document.body.setAttribute('data-universe', u);
+  var btns = document.querySelectorAll('.nav-btn');
+  var universes = ['films','series','livres','jeux'];
+  btns.forEach(function(b,i){ b.classList.toggle('active', universes[i] === u); });
+  var colors = {films:'#e8281e',series:'#6c5ce7',livres:'#27ae60',jeux:'#f39c12'};
+  var meta = document.getElementById('theme-color-meta');
+  if(meta) meta.setAttribute('content', colors[u] || '#e8281e');
+  var icons = {films:'🎬',series:'📺',livres:'📚',jeux:'🎮'};
+  var ii = document.getElementById('install-icon');
+  if(ii) ii.textContent = icons[u];
+  renderHeader();
+  renderFilters();
+  renderCards();
+}
+
+function renderHeader() {
+  var cfg = UNIVERSE_CONFIG[currentUniverse];
+  var items = db[currentUniverse];
+  document.getElementById('universe-subtitle').textContent = cfg.subtitle;
+  document.getElementById('universe-title-text').textContent = cfg.label.toUpperCase();
+  var total = items.length;
+  var avg = total > 0 ? (items.reduce(function(s,i){ return s+calcTotal(i,currentUniverse); },0)/total).toFixed(1) : '—';
+  var seen = items.filter(function(i){ return i.seen; }).length;
+  var favs = items.filter(function(i){ return i.heart; }).length;
+  document.getElementById('universe-stats').innerHTML =
+    '<div class="stat-pill"><strong>'+total+'</strong>titre'+(total>1?'s':'')+'</div>'+
+    '<div class="stat-pill"><strong>'+avg+'</strong>/20 moy.</div>'+
+    '<div class="stat-pill">✅ <strong>'+seen+'</strong>terminé'+(seen>1?'s':'')+'</div>'+
+    '<div class="stat-pill">❤️ <strong>'+favs+'</strong>favori'+(favs>1?'s':'')+'</div>';
+}
+
+function renderFilters() {
+  var bar = document.getElementById('filters-bar');
+  var f = currentFilter;
+  var html =
+    '<button class="filter-btn '+(f==='best'?'active':'')+'" onclick="setFilter(\'best\')">⭐ Meilleure note</button>'+
+    '<button class="filter-btn heart '+(f==='heart'?'active':'')+'" onclick="setFilter(\'heart\')">❤️ Favoris</button>'+
+    '<button class="filter-btn '+(f==='seen'?'active':'')+'" onclick="setFilter(\'seen\')">✅ Terminés</button>'+
+    '<button class="filter-btn '+(f==='unseen'?'active':'')+'" onclick="setFilter(\'unseen\')">⏳ À voir</button>'+
+    '<button class="filter-btn '+(f==='recent'?'active':'')+'" onclick="setFilter(\'recent\')">🕒 Récents</button>';
+  if(currentUniverse==='series') {
+    html += '<button class="filter-btn '+(f==='progress'?'active':'')+'" onclick="setFilter(\'progress\')">📺 En cours</button>';
+  }
+  if(currentUniverse==='jeux') {
+    html += '<select class="filter-select" onchange="setPlatform(this.value)"><option value="all">🎮 Toutes plateformes</option>';
+    PLATFORMS.forEach(function(p){ html += '<option value="'+p+'"'+(currentPlatform===p?' selected':'')+'>'+p+'</option>'; });
+    html += '</select>';
+  }
+  bar.innerHTML = html;
+}
+function setFilter(f){ currentFilter=f; renderFilters(); renderCards(); }
+function setPlatform(p){ currentPlatform=p; renderCards(); }
+
+function renderCards() {
+  var grid = document.getElementById('cards-grid');
+  var items = db[currentUniverse].slice();
+  var cfg = UNIVERSE_CONFIG[currentUniverse];
+
+  if(currentUniverse==='jeux' && currentPlatform!=='all') items=items.filter(function(i){ return i.platform===currentPlatform; });
+  if(currentFilter==='heart') items=items.filter(function(i){ return i.heart; });
+  else if(currentFilter==='seen') items=items.filter(function(i){ return i.seen; });
+  else if(currentFilter==='unseen') items=items.filter(function(i){ return !i.seen; });
+  else if(currentFilter==='progress') items=items.filter(function(i){
+    if(!i.seasons||!i.seasons.length) return false;
+    var p=seriesProgress(i); return p.pct>0&&p.pct<100;
+  });
+
+  if(currentFilter==='recent') items.sort(function(a,b){ return (b.addedAt||0)-(a.addedAt||0); });
+  else items.sort(function(a,b){ return calcTotal(b,currentUniverse)-calcTotal(a,currentUniverse); });
+
+  var allSorted = db[currentUniverse].slice().sort(function(a,b){ return calcTotal(b,currentUniverse)-calcTotal(a,currentUniverse); });
+
+  var html = '';
+  items.forEach(function(item, idx) {
+    var total = calcTotal(item, currentUniverse);
+    var pct = (total/20*100).toFixed(0);
+    var rank = 1; for(var _ri=0;_ri<allSorted.length;_ri++){ if(allSorted[_ri].id===item.id){rank=_ri+1;break;} }
+
+    var seenBadge = '';
+    if(item.seen) {
+      seenBadge = '<div class="card-seen-badge">✅ '+(item.seenDate ? formatDate(item.seenDate) : 'Terminé')+'</div>';
+    }
+
+    var coverHtml = item.cover
+      ? '<div class="card-cover"><img src="'+esc(item.cover)+'" alt="" loading="lazy" onerror="this.parentNode.innerHTML=\'<div class=\\"card-cover-placeholder\\">'+cfg.emoji+'</div>\'">'+seenBadge+'</div>'
+      : '<div class="card-cover-placeholder">'+cfg.emoji+'</div>';
+
+    var extra = '';
+    if(currentUniverse==='jeux'&&item.platform) extra+='<div class="card-platform">🎮 '+esc(item.platform)+'</div>';
+    if(currentUniverse==='series'&&item.seasons&&item.seasons.length){
+      var prog=seriesProgress(item);
+      extra+='<div class="card-progress"><div class="card-progress-text">S'+item.seasons.length+' · '+prog.watched+'/'+prog.total+' ép. ('+prog.pct+'%)</div><div class="card-progress-bar"><div class="card-progress-fill" style="width:'+prog.pct+'%"></div></div></div>';
+    }
+    var yearBadge = item.releaseYear ? ' · '+item.releaseYear : '';
+
+    html +=
+      '<div class="media-card" onclick="openDetail(\''+item.id+'\')" style="animation-delay:'+idx*0.04+'s">'+
+        '<div class="card-rank">#'+rank+'</div>'+
+        '<button class="card-heart '+(item.heart?'active':'')+'" onclick="toggleHeart(event,\''+item.id+'\')">'+( item.heart?'❤️':'🤍')+'</button>'+
+        coverHtml+
+        '<div class="card-body">'+
+          '<div class="card-title" title="'+esc(item.title)+'">'+esc(item.title)+'</div>'+
+          '<div class="card-meta">'+esc(item.meta||'')+yearBadge+'</div>'+
+          '<div class="card-score-row">'+
+            '<div class="card-score">'+total.toFixed(1)+'<small>/20</small></div>'+
+            '<div class="score-bar-mini"><div class="score-bar-mini-fill" style="width:'+pct+'%"></div></div>'+
+          '</div>'+
+          extra+
+        '</div>'+
+      '</div>';
+  });
+
+  if(items.length===0) {
+    var msgs = {heart:'Aucun favori.',seen:'Aucun contenu terminé.',unseen:'Tout est terminé !',progress:'Aucune série en cours.'};
+    html += '<div class="empty-state"><div class="empty-icon">'+cfg.emoji+'</div><h3>'+(msgs[currentFilter]||'Aucun contenu.')+'</h3></div>';
+  }
+  html += '<div class="add-card" onclick="openAddModal()"><div class="add-card-icon">＋</div><div>Ajouter</div></div>';
+  grid.innerHTML = html;
+}
+
+function toggleHeart(e, id) {
+  e.stopPropagation();
+  var item = null; for(var _fd=0;_fd<db[currentUniverse].length;_fd++){ if(db[currentUniverse][_fd].id===id){item=db[currentUniverse][_fd];break;} }
+  if(!item) return;
+  item.heart = !item.heart;
+  saveDB(); renderHeader(); renderCards();
+  showToast(item.heart?'\u2764\uFE0F Ajouté aux favoris !':'\uD83D\uDC94 Retiré des favoris');
+}
+
+function toggleSeenDate() {
+  var checked = document.getElementById('f-seen').checked;
+  var dateInput = document.getElementById('f-seen-date');
+  dateInput.style.display = checked ? 'block' : 'none';
+  if(checked && !dateInput.value) {
+    dateInput.value = new Date().toISOString().split('T')[0];
+  }
+}
+
+function openAddModal(id) {
+  id = id || null;
+  editingId = id;
+  var cfg = UNIVERSE_CONFIG[currentUniverse];
+  var item = null; if(id){ for(var _ff=0;_ff<db[currentUniverse].length;_ff++){ if(db[currentUniverse][_ff].id===id){item=db[currentUniverse][_ff];break;} } }
+
+  document.getElementById('modal-form-title').textContent = id ? 'MODIFIER' : 'AJOUTER';
+  document.getElementById('delete-btn').style.display = id ? 'block' : 'none';
+
+  var fieldsHtml =
+    '<div class="form-group full"><label>Titre *</label><input id="f-title" type="text" placeholder="Titre..." value="'+esc(item&&item.title||'')+'"></div>'+
+    '<div class="form-group"><label>'+cfg.metaLabel+'</label><input id="f-meta" type="text" placeholder="'+cfg.metaLabel+'..." value="'+esc(item&&item.meta||'')+'"></div>'+
+    '<div class="form-group"><label>Année de sortie</label><input id="f-release-year" type="number" placeholder="2024" min="1888" max="2099" value="'+esc(item&&item.releaseYear||'')+'"></div>'+
+    '<div class="form-group"><label>Genre</label><select id="f-genre"><option value="">— Choisir —</option>';
+  GENRES[currentUniverse].forEach(function(g){ fieldsHtml += '<option value="'+g+'"'+(item&&item.genre===g?' selected':'')+'>'+g+'</option>'; });
+  fieldsHtml += '</select></div>';
+  fieldsHtml += '<div class="form-group full"><label>Image de couverture (URL)</label><input id="f-cover" type="url" placeholder="https://..." value="'+esc(item&&item.cover||'')+'"></div>';
+  if(currentUniverse==='jeux') {
+    fieldsHtml += '<div class="form-group"><label>Plateforme</label><select id="f-platform"><option value="">— Choisir —</option>';
+    PLATFORMS.forEach(function(p){ fieldsHtml += '<option value="'+p+'"'+(item&&item.platform===p?' selected':'')+'>'+p+'</option>'; });
+    fieldsHtml += '</select></div>';
+  }
+  document.getElementById('form-fields').innerHTML = fieldsHtml;
+
+  var seenCb = document.getElementById('f-seen');
+  var seenDate = document.getElementById('f-seen-date');
+  seenCb.checked = item && item.seen || false;
+  seenDate.value = item && item.seenDate || '';
+  seenDate.style.display = item && item.seen ? 'block' : 'none';
+  document.getElementById('seen-label-text').textContent = cfg.seenLabel.replace(' le','') + ' / Terminé';
+  document.getElementById('seen-label-sub').textContent = item && item.seen && item.seenDate ? cfg.seenLabel + ' ' + formatDate(item.seenDate) : 'Cochez si terminé';
+
+  var criteriaHtml = '';
+  cfg.criteria.forEach(function(c) {
+    var val = item && item.scores && item.scores[c.key] !== undefined ? item.scores[c.key] : 0;
+    criteriaHtml +=
+      '<div class="criterion-row">'+
+        '<div class="criterion-label">'+c.label+'<small>/'+c.max+'</small></div>'+
+        '<div class="criterion-input">'+
+          '<input type="range" id="cr-'+c.key+'" min="0" max="'+c.max+'" step="0.5" value="'+val+'" oninput="updateLiveScore();document.getElementById(\'cv-'+c.key+'\').textContent=parseFloat(this.value).toFixed(1)+\'/'+c.max+'\'">'+
+          '<div class="criterion-value" id="cv-'+c.key+'">'+parseFloat(val).toFixed(1)+'/'+c.max+'</div>'+
+        '</div>'+
+      '</div>';
+  });
+  document.getElementById('criteria-inputs').innerHTML = criteriaHtml;
+
+  var extraHtml = '';
+  if(currentUniverse==='series') {
+    var seasons = item && item.seasons && item.seasons.length ? item.seasons : [{total:10,watched:0}];
+    extraHtml = '<div class="rating-section"><h4>SUIVI ÉPISODES</h4><div id="seasons-list">'+renderSeasonsInputs(seasons)+'</div><button type="button" class="btn-secondary" style="margin-top:9px;font-size:12px;" onclick="addSeason()">+ Ajouter une saison</button></div>';
+  }
+  document.getElementById('extra-section').innerHTML = extraHtml;
+
+  updateLiveScore();
+  openModal('add-modal');
+}
+
+function renderSeasonsInputs(seasons) {
+  var html = '';
+  seasons.forEach(function(s,i) {
+    html +=
+      '<div class="season-row" id="season-row-'+i+'">'+
+        '<div class="season-label">Saison '+(i+1)+'</div>'+
+        '<div class="season-input">'+
+          '<input type="number" id="s-watched-'+i+'" min="0" value="'+(s.watched||0)+'" style="width:52px;text-align:center;">'+
+          '<span class="season-ep-label"> / </span>'+
+          '<input type="number" id="s-total-'+i+'" min="1" value="'+(s.total||10)+'" style="width:52px;text-align:center;">'+
+          '<span class="season-ep-label"> ép.</span>'+
+          (i>0?'<button type="button" onclick="removeSeason('+i+')" style="background:none;border:none;color:#e74c3c;cursor:pointer;margin-left:4px;font-size:15px;">✕</button>':'')+
+        '</div>'+
+      '</div>';
+  });
+  return html;
+}
+
+function addSeason() {
+  var list = document.getElementById('seasons-list');
+  var idx = list.querySelectorAll('.season-row').length;
+  var div = document.createElement('div');
+  div.innerHTML =
+    '<div class="season-row" id="season-row-'+idx+'">'+
+      '<div class="season-label">Saison '+(idx+1)+'</div>'+
+      '<div class="season-input">'+
+        '<input type="number" id="s-watched-'+idx+'" min="0" value="0" style="width:52px;text-align:center;">'+
+        '<span class="season-ep-label"> / </span>'+
+        '<input type="number" id="s-total-'+idx+'" min="1" value="10" style="width:52px;text-align:center;">'+
+        '<span class="season-ep-label"> ép.</span>'+
+        '<button type="button" onclick="removeSeason('+idx+')" style="background:none;border:none;color:#e74c3c;cursor:pointer;margin-left:4px;font-size:15px;">✕</button>'+
+      '</div>'+
+    '</div>';
+  list.appendChild(div.firstElementChild);
+}
+
+function removeSeason(idx) {
+  var row = document.getElementById('season-row-'+idx);
+  if(row) {
+    row.remove();
+    document.querySelectorAll('#seasons-list .season-label').forEach(function(el,i){ el.textContent='Saison '+(i+1); });
+  }
+}
+
+function updateLiveScore() {
+  var cfg = UNIVERSE_CONFIG[currentUniverse];
+  var total = 0;
+  cfg.criteria.forEach(function(c){ var el=document.getElementById('cr-'+c.key); if(el) total+=parseFloat(el.value)||0; });
+  document.getElementById('live-score').textContent = total.toFixed(1);
+}
+
+function saveItem() {
+  var title = document.getElementById('f-title') && document.getElementById('f-title').value.trim();
+  if(!title) { showToast('\u26A0\uFE0F Le titre est obligatoire'); return; }
+
+  var cfg = UNIVERSE_CONFIG[currentUniverse];
+  var scores = {};
+  cfg.criteria.forEach(function(c){ var el=document.getElementById('cr-'+c.key); scores[c.key]=el?parseFloat(el.value):0; });
+
+  var seen = document.getElementById('f-seen').checked;
+  var seenDate = seen ? (document.getElementById('f-seen-date').value || '') : '';
+
+  var seasons = [];
+  if(currentUniverse==='series') {
+    var list = document.getElementById('seasons-list');
+    if(list) {
+      list.querySelectorAll('.season-row').forEach(function(row) {
+        var id = row.id.replace('season-row-','');
+        seasons.push({
+          watched: parseInt(document.getElementById('s-watched-'+id) && document.getElementById('s-watched-'+id).value)||0,
+          total: parseInt(document.getElementById('s-total-'+id) && document.getElementById('s-total-'+id).value)||10
+        });
+      });
+    }
+  }
+
+  var existing = null; if(editingId){ for(var _fe=0;_fe<db[currentUniverse].length;_fe++){ if(db[currentUniverse][_fe].id===editingId){existing=db[currentUniverse][_fe];break;} } }
+  var item = {
+    id: editingId || genId(),
+    title: title,
+    meta: document.getElementById('f-meta').value.trim(),
+    releaseYear: document.getElementById('f-release-year').value,
+    genre: document.getElementById('f-genre').value,
+    cover: document.getElementById('f-cover').value.trim(),
+    scores: scores,
+    seen: seen,
+    seenDate: seenDate,
+    heart: existing ? existing.heart : false,
+    addedAt: existing ? existing.addedAt : Date.now()
+  };
+  if(currentUniverse==='jeux') item.platform = document.getElementById('f-platform') ? document.getElementById('f-platform').value : '';
+  if(currentUniverse==='series') item.seasons = seasons;
+
+  if(editingId) {
+    var idx = -1; for(var _fi=0;_fi<db[currentUniverse].length;_fi++){ if(db[currentUniverse][_fi].id===editingId){idx=_fi;break;} }
+    if(idx>=0) db[currentUniverse][idx]=item;
+  } else {
+    db[currentUniverse].push(item);
+  }
+
+  saveDB(); closeModal('add-modal'); renderHeader(); renderCards();
+  showToast(editingId?'\u2705 Modifié !':'\u2705 Ajouté à la collection !');
+  editingId = null;
+}
+
+function deleteCurrentItem() {
+  if(!editingId) return;
+  if(!confirm('Supprimer ce contenu ?')) return;
+  db[currentUniverse] = db[currentUniverse].filter(function(i){ return i.id!==editingId; });
+  saveDB(); closeModal('add-modal'); renderHeader(); renderCards();
+  showToast('\uD83D\uDDD1\uFE0F Supprimé.'); editingId=null;
+}
+
+function openDetail(id) {
+  detailId = id;
+  var item = null; for(var _fd=0;_fd<db[currentUniverse].length;_fd++){ if(db[currentUniverse][_fd].id===id){item=db[currentUniverse][_fd];break;} }
+  if(!item) return;
+  var cfg = UNIVERSE_CONFIG[currentUniverse];
+  var total = calcTotal(item, currentUniverse);
+
+  document.getElementById('detail-modal-title').textContent = esc(item.title).toUpperCase();
+
+  var coverHtml = item.cover
+    ? '<div class="detail-cover"><img src="'+esc(item.cover)+'" alt=""></div>'
+    : '<div class="detail-cover-placeholder">'+cfg.emoji+'</div>';
+
+  var tags = '';
+  if(item.meta) tags+='<span class="detail-tag">👤 '+esc(item.meta)+'</span>';
+  if(item.releaseYear) tags+='<span class="detail-tag">🗓️ '+esc(item.releaseYear)+'</span>';
+  if(item.genre) tags+='<span class="detail-tag">🏷️ '+esc(item.genre)+'</span>';
+  if(currentUniverse==='jeux'&&item.platform) tags+='<span class="detail-tag">🎮 '+esc(item.platform)+'</span>';
+  if(item.seen) {
+    tags+='<span class="detail-tag seen-tag">✅ '+(item.seenDate ? cfg.seenLabel+' '+formatDate(item.seenDate) : 'Terminé')+'</span>';
+  } else {
+    tags+='<span class="detail-tag unseen-tag">⏳ '+cfg.notSeenLabel+'</span>';
+  }
+
+  var bars = '<div class="criteria-bars">';
+  cfg.criteria.forEach(function(c) {
+    var val = item.scores && item.scores[c.key] || 0;
+    var pct = (val/c.max*100).toFixed(0);
+    bars+='<div class="crit-bar-row"><div class="crit-bar-label">'+c.label+'</div><div class="crit-bar-track"><div class="crit-bar-fill" style="width:'+pct+'%"></div></div><div class="crit-bar-val">'+parseFloat(val).toFixed(1)+'/'+c.max+'</div></div>';
+  });
+  bars+='</div>';
+
+  var seasonsHtml = '';
+  if(currentUniverse==='series'&&item.seasons&&item.seasons.length) {
+    var prog=seriesProgress(item);
+    seasonsHtml='<div style="margin-top:16px;"><div class="section-label" style="font-size:13px;margin-bottom:9px;">PROGRESSION · <span>'+prog.watched+'/'+prog.total+' ép. ('+prog.pct+'%)</span></div><div class="seasons-grid">';
+    item.seasons.forEach(function(s,i){
+      var p=s.total>0?Math.round((s.watched||0)/s.total*100):0;
+      seasonsHtml+='<div class="season-card"><div class="s-num">S'+(i+1)+'</div><div class="s-prog">'+(s.watched||0)+'/'+s.total+' ép.</div><div class="season-prog-bar"><div class="season-prog-fill" style="width:'+p+'%"></div></div></div>';
+    });
+    seasonsHtml+='</div></div>';
+  }
+
+  var canvasId = 'radar-'+id;
+  document.getElementById('detail-modal-body').innerHTML =
+    '<div class="detail-cover-row">'+
+      coverHtml+
+      '<div class="detail-info">'+
+        '<div class="detail-title">'+esc(item.title)+'</div>'+
+        '<div class="detail-tags">'+tags+'</div>'+
+        '<div class="detail-score-big">'+total.toFixed(1)+'<small>/20</small></div>'+
+        '<button class="detail-heart-btn '+(item.heart?'active':'')+'" onclick="toggleHeartDetail(\''+item.id+'\')">'+
+          (item.heart?'❤️ Favori':'🤍 Ajouter aux favoris')+
+        '</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="section-label" style="font-size:13px;margin-bottom:9px;">NOTES DÉTAILLÉES</div>'+
+    bars+
+    '<div class="radar-container"><canvas id="'+canvasId+'" class="radar" width="250" height="250"></canvas></div>'+
+    seasonsHtml;
+
+  openModal('detail-modal');
+  setTimeout(function(){ drawRadar(canvasId, item, cfg); }, 60);
+}
+
+function toggleHeartDetail(id) {
+  var item = null; for(var _fd=0;_fd<db[currentUniverse].length;_fd++){ if(db[currentUniverse][_fd].id===id){item=db[currentUniverse][_fd];break;} }
+  if(!item) return;
+  item.heart=!item.heart;
+  saveDB(); renderHeader(); renderCards();
+  var btn=document.querySelector('.detail-heart-btn');
+  if(btn){btn.classList.toggle('active',item.heart);btn.innerHTML=item.heart?'❤️ Favori':'🤍 Ajouter aux favoris';}
+  showToast(item.heart?'\u2764\uFE0F Ajouté aux favoris !':'\uD83D\uDC94 Retiré des favoris');
+}
+
+function editCurrentItem(){ closeModal('detail-modal'); setTimeout(function(){ openAddModal(detailId); },200); }
+
+function drawRadar(canvasId, item, cfg) {
+  var canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W=canvas.width, H=canvas.height, cx=W/2, cy=H/2, r=Math.min(W,H)/2-34;
+  var n=cfg.criteria.length;
+  var accent = getComputedStyle(document.body).getPropertyValue('--accent').trim();
+  ctx.clearRect(0,0,W,H);
+
+  [0.25,0.5,0.75,1].forEach(function(lv){
+    ctx.beginPath();
+    cfg.criteria.forEach(function(c,i){
+      var a=(i/n)*Math.PI*2-Math.PI/2;
+      var x=cx+Math.cos(a)*r*lv, y=cy+Math.sin(a)*r*lv;
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.closePath();
+    ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1;ctx.stroke();
+  });
+
+  cfg.criteria.forEach(function(c,i){
+    var a=(i/n)*Math.PI*2-Math.PI/2;
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);
+    ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1;ctx.stroke();
+  });
+
+  ctx.beginPath();
+  cfg.criteria.forEach(function(c,i){
+    var val=item.scores&&item.scores[c.key]||0, ratio=val/c.max;
+    var a=(i/n)*Math.PI*2-Math.PI/2;
+    var x=cx+Math.cos(a)*r*ratio, y=cy+Math.sin(a)*r*ratio;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.closePath();
+  ctx.fillStyle='rgba(255,255,255,0.07)';ctx.fill();
+  ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.stroke();
+
+  cfg.criteria.forEach(function(c,i){
+    var val=item.scores&&item.scores[c.key]||0, ratio=val/c.max;
+    var a=(i/n)*Math.PI*2-Math.PI/2;
+    ctx.beginPath();
+    ctx.arc(cx+Math.cos(a)*r*ratio,cy+Math.sin(a)*r*ratio,4,0,Math.PI*2);
+    ctx.fillStyle=accent;ctx.fill();
+    ctx.font='10px DM Sans,sans-serif';ctx.fillStyle='rgba(255,255,255,0.65)';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    var lx=cx+Math.cos(a)*(r+20), ly=cy+Math.sin(a)*(r+20);
+    ctx.fillText(c.label.split('/')[0].split(' ').slice(0,2).join(' '), lx, ly);
+  });
+}
+
+function openModal(id){ document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+function handleOverlay(e,id){ if(e.target===document.getElementById(id)) closeModal(id); }
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ closeModal('add-modal'); closeModal('detail-modal'); } });
+
+// PWA Install
+var deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault(); deferredPrompt=e;
+  if(!localStorage.getItem('install_dismissed')) {
+    setTimeout(function(){ document.getElementById('install-banner').classList.add('visible'); }, 4000);
+  }
+});
+window.addEventListener('appinstalled', function(){
+  document.getElementById('install-banner').classList.remove('visible');
+  showToast('\uD83C\uDF89 UNIVERSE installé !');
+});
+function triggerInstall() {
+  if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt=null; }
+  else showToast("\uD83D\uDCF1 Menu Chrome \u2192 Ajouter \u00e0 l'\u00e9cran d'accueil");
+  document.getElementById('install-banner').classList.remove('visible');
+}
+function dismissInstall() {
+  document.getElementById('install-banner').classList.remove('visible');
+  localStorage.setItem('install_dismissed','1');
+}
+
+// Seed data
+function seedData() {
+  if(db.films.length||db.series.length||db.livres.length||db.jeux.length) return;
+  db.films=[
+    {id:'f1',title:'Dune: Part Two',meta:'Denis Villeneuve',releaseYear:'2024',genre:'SF',cover:'https://image.tmdb.org/t/p/w500/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg',scores:{histoire:7.5,acting:3.5,musique:3,visuel:3,rythme:1.5},seen:true,seenDate:'2024-03-10',heart:true,addedAt:Date.now()-5},
+    {id:'f2',title:'Oppenheimer',meta:'Christopher Nolan',releaseYear:'2023',genre:'Drame',cover:'https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg',scores:{histoire:7,acting:4,musique:2.5,visuel:2.5,rythme:1.5},seen:true,seenDate:'2023-08-15',heart:false,addedAt:Date.now()-4},
+    {id:'f3',title:'Poor Things',meta:'Yorgos Lanthimos',releaseYear:'2023',genre:'Drame',cover:'https://image.tmdb.org/t/p/w500/kCGlIMHnOm8JPXNbM6ExNLRR8yp.jpg',scores:{histoire:6.5,acting:4,musique:2,visuel:3,rythme:1.5},seen:false,seenDate:'',heart:true,addedAt:Date.now()-3}
+  ];
+  db.series=[
+    {id:'s1',title:'The Last of Us',meta:'Craig Mazin',releaseYear:'2023',genre:'Drame',cover:'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg',scores:{histoire:7.5,acting:4,musique:2.5,visuel:2.5,rythme:1.5},seen:false,seenDate:'',heart:true,seasons:[{watched:9,total:9},{watched:3,total:7}],addedAt:Date.now()-5},
+    {id:'s2',title:'Succession',meta:'Jesse Armstrong',releaseYear:'2018',genre:'Drame',cover:'https://image.tmdb.org/t/p/w500/e2X4jTMki6543EbrNmGBNYgmYB1.jpg',scores:{histoire:8,acting:4,musique:3,visuel:2.5,rythme:2},seen:true,seenDate:'2023-06-01',heart:true,seasons:[{watched:10,total:10},{watched:10,total:10},{watched:9,total:9},{watched:10,total:10}],addedAt:Date.now()-4}
+  ];
+  db.livres=[
+    {id:'l1',title:'Dune',meta:'Frank Herbert',releaseYear:'1965',genre:'SF',cover:'https://covers.openlibrary.org/b/id/8391919-L.jpg',scores:{histoire:8,personnages:4.5,ecriture:3.5,univers:3},seen:true,seenDate:'2023-01-20',heart:true,addedAt:Date.now()-5},
+    {id:'l2',title:'Le Comte de Monte-Cristo',meta:'Alexandre Dumas',releaseYear:'1844',genre:'Roman',cover:'https://covers.openlibrary.org/b/id/12003188-L.jpg',scores:{histoire:7.5,personnages:4,ecriture:4,univers:2.5},seen:false,seenDate:'',heart:false,addedAt:Date.now()-3}
+  ];
+  db.jeux=[
+    {id:'j1',title:'Elden Ring',meta:'FromSoftware',releaseYear:'2022',genre:'RPG',cover:'',scores:{histoire:5,visuel:4.5,musique:3.5,gameplay:5},seen:true,seenDate:'2022-06-10',heart:true,platform:'PS5',addedAt:Date.now()-5},
+    {id:'j2',title:'Zelda: TotK',meta:'Nintendo EPD',releaseYear:'2023',genre:'Aventure',cover:'',scores:{histoire:4,visuel:4,musique:3.5,gameplay:5},seen:false,seenDate:'',heart:true,platform:'Nintendo Switch',addedAt:Date.now()-3}
+  ];
+  saveDB();
+}
+
+seedData();
+switchUniverse('films');
+</script>
+</body>
+</html>
